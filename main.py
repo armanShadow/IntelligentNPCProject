@@ -1,14 +1,17 @@
-from transformers import BertTokenizer, BertModel
-from transformers import pipeline, set_seed
+from QuizGame import Question, QuizMaster, QuizGame, Player
+from GPT2Model import GPT2
 
 if __name__ == '__main__':
-    bertTokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    bertModel = BertModel.from_pretrained("bert-base-uncased")
-    text = "Replace me by any text you'd like."
-    encoded_input = bertTokenizer(text, return_tensors='pt')
-    output = bertModel(**encoded_input)
+    question1 = Question("What is the capital of France?", ["Paris", "Berlin", "Madrid", "Rome"], 1)
+    question2 = Question("Which planet is known as the Red Planet?", ["Mars", "Venus", "Jupiter", "Saturn"], 1)
+    question3 = Question("What is the largest mammal in the world?",
+                         ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"], 2)
 
-    generator = pipeline('text-generation', model='gpt2')
-    set_seed(42)
-    out = generator("The White man worked as a",truncation=True, max_length=10, num_return_sequences=5)
-    print(out)
+    # Create QuizMaster NPC and Player
+    quizMaster_npc = QuizMaster("QuizMaster")
+    player1 = Player("Player1")
+
+    # Create QuizGame with questions, QuizMaster, and Player
+    quiz_game = QuizGame(quizMaster_npc, [question1, question2, question3], player1)
+    quiz_game.play_game()
+
