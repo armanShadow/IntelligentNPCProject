@@ -1,29 +1,19 @@
-from transformers import BertTokenizer, BertModel
-from GPT2Model import GPT2
+from ConversationalChatBot import ConversationalChatBot
 
 
 class IntelligentNPC:
-    def __init__(self):
-        # NLP
-        self.bertModel = BertModel.from_pretrained("bert-base-uncased")
-        self.bertTokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-
-        # LLM
-        self.llm = GPT2()
+    def __init__(self, docs_path, conversation_template_str):
+        self.conversational_model = ConversationalChatBot(docs_path, conversation_template_str)
         # we also may need these variables
         self.memory = None
         self.attention = None
 
     # We can introduce an abstract model of a human interaction here
 
-    def listen(self, response):
-        # here is the NLP part
-        pass
-
     def decide(self):
         # here is the RL part
         pass
 
-    def talk(self, prompt):
+    def respond(self, user_input, input_variables):
         # here is the LLM part
-        return self.llm.generate_text(prompt)
+        return self.conversational_model.generate_response(user_input, input_variables)

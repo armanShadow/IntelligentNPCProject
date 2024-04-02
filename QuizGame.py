@@ -2,9 +2,10 @@ from IntelligentNPC import IntelligentNPC
 
 
 class QuizMaster(IntelligentNPC):
-    def __init__(self, name):
-        super().__init__()
+    def __init__(self, name, docs_path, conversation_template_str):
+        super().__init__(docs_path, conversation_template_str)
         self.name = name
+        self.input_variables = None
 
     def selectQuestion(self, questions):
         pass
@@ -41,15 +42,19 @@ class Player:
 
 
 class QuizGame:
-    def __init__(self, quizMaster, questions, player):
-        self.quizMaster = quizMaster
+    def __init__(self, quiz_master, questions, player):
+        self.quiz_master = quiz_master
+        self.quiz_master.input_variables = {"quiz_master": quiz_master.name, "player": player.name}
         self.questions = questions
         self.player = player
 
-    def play_round(self):
-        pass
-
     def play_game(self):
-        print(self.quizMaster.talk(f"Greetings, My name is {self.quizMaster.name}."))
+        while True:
+            user_input = input("You: ")
+            if user_input.lower() == 'exit':
+                break
+
+            response = self.quiz_master.respond(user_input, self.quiz_master.input_variables)
+            print("Quiz Master:", response)
 
 
