@@ -20,21 +20,6 @@ class QuizMaster(IntelligentNPC):
         pass
 
 
-class Question:
-    def __init__(self, question_text, options, correct_option):
-        self.question_text = question_text
-        self.options = options
-        self.correct_option = correct_option
-
-    def display_question(self):
-        print(self.question_text)
-        for i, option in enumerate(self.options, start=1):
-            print(f"{i}. {option}")
-
-    def is_correct(self, selected_option):
-        return selected_option == self.correct_option
-
-
 class Player:
     def __init__(self, name):
         self.name = name
@@ -42,10 +27,9 @@ class Player:
 
 
 class QuizGame:
-    def __init__(self, quiz_master, questions, player):
+    def __init__(self, quiz_master, player):
         self.quiz_master = quiz_master
         self.quiz_master.input_variables = {"quiz_master": quiz_master.name, "player": player.name}
-        self.questions = questions
         self.player = player
 
     def play_game(self):
@@ -56,5 +40,3 @@ class QuizGame:
 
             response = self.quiz_master.respond(user_input, self.quiz_master.input_variables)
             print("Quiz Master:", response)
-
-
