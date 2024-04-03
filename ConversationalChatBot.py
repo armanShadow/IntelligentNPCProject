@@ -1,7 +1,6 @@
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.document_loaders.web_base import WebBaseLoader
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.messages import HumanMessage, AIMessage
