@@ -2,8 +2,8 @@ from ConversationalChatBot import ConversationalChatBot
 
 
 class IntelligentNPC:
-    def __init__(self, docs_path, conversation_template_str):
-        self.conversational_model = ConversationalChatBot(docs_path, conversation_template_str)
+    def __init__(self, url, conversation_template_str):
+        self.conversational_model = ConversationalChatBot(url, conversation_template_str)
         # we also may need these variables
         self.memory = None
         self.attention = None

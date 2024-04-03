@@ -2,8 +2,8 @@ from IntelligentNPC import IntelligentNPC
 
 
 class QuizMaster(IntelligentNPC):
-    def __init__(self, name, docs_path, conversation_template_str):
-        super().__init__(docs_path, conversation_template_str)
+    def __init__(self, name, questions_url, conversation_template_str):
+        super().__init__(questions_url, conversation_template_str)
         self.name = name
         self.input_variables = None
 

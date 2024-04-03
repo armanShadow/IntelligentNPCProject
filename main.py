@@ -10,7 +10,9 @@ if __name__ == '__main__':
     {context}
     Here is a sample of a question:
 
-    Category: History
+    Category: History 
+    Difficulty: Easy
+    Type: Multiple Choice
     Question: Who was the first President of the United States?
     Option A: Thomas Jefferson
     Option B: George Washington
@@ -25,7 +27,7 @@ if __name__ == '__main__':
 '''
     # Create QuizMaster NPC and Player
     quizMaster_npc = QuizMaster("Braum",
-                                "Book1.csv",
+                                "https://opentdb.com/api.php?amount=10&type=multiple",
                                 conversation_template_str)
 
     # Create QuizGame with questions, QuizMaster, and Player

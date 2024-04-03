@@ -2,6 +2,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_community.document_loaders.web_base import WebBaseLoader
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -13,8 +14,8 @@ load_dotenv()
 
 
 class ConversationalChatBot:
-    def __init__(self, docs_path, template_str):
-        self.docs = self.get_documents(docs_path)
+    def __init__(self, url, template_str):
+        self.docs = self.get_documents_from_web_url(url)
         self.vectorStore = self.__create_db(self.docs)
         self.chain = self.create_chain(self.vectorStore, template_str)
         self.chat_history = []
@@ -26,8 +27,8 @@ class ConversationalChatBot:
         return vector_store
 
     @staticmethod
-    def get_documents(path):
-        loader = CSVLoader(path)
+    def get_documents_from_web_url(url):
+        loader = WebBaseLoader(url)
         docs = loader.load()
 
         splitter = RecursiveCharacterTextSplitter(
