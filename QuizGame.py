@@ -32,11 +32,4 @@ class QuizGame:
         self.quiz_master.input_variables = {"quiz_master": quiz_master.name, "player": player.name}
         self.player = player
 
-    def play_game(self):
-        while True:
-            user_input = input("You: ")
-            if user_input.lower() == 'exit':
-                break
 
-            response = self.quiz_master.respond(user_input, self.quiz_master.input_variables)
-            print("Quiz Master:", response)

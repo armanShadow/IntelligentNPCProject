@@ -1,20 +1,15 @@
-from QuizGame import QuizMaster, QuizGame, Player
-from flask import Flask
-from dotenv import load_dotenv
+import json
 
-load_dotenv()
+from QuizGame import QuizMaster, QuizGame, Player
+from dotenv import load_dotenv
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
+load_dotenv()
 
+player1 = Player("Arman")
 
-@app.route('/')
-def home():
-    return "Hello! this is the main page <h1>HELLO</h1>"
-
-
-def main():
-    player1 = Player("Arman")
-    conversation_template_str = '''You are a quiz master, and your name is {quiz_master}. the player name is {player} 
+conversation_template_str = '''You are a quiz master, and your name is {quiz_master}. the player name is {player} 
         Always introduce yourself. and call the player by name as a form of intimacy. Your job is too ask the player 
         different questions from different categories. be friendly and provide hints (not the direct solution) when they 
         asked for hints. Always Start asking questions when the player is ready for the next 
@@ -37,15 +32,28 @@ def main():
         Well done!
         Are you ready for the next question?
     '''
-    # Create QuizMaster NPC and Player
-    quizMaster_npc = QuizMaster("Braum",
-                                "https://opentdb.com/api.php?amount=10&type=multiple",
-                                conversation_template_str)
+# Create QuizMaster NPC and Player
+quizMaster_npc = QuizMaster("Braum",
+                            "https://opentdb.com/api.php?amount=10&type=multiple",
+                            conversation_template_str)
 
-    # Create QuizGame with questions, QuizMaster, and Player
-    quiz_game = QuizGame(quizMaster_npc, player1)
-    quiz_game.play_game()
+# Create QuizGame with questions, QuizMaster, and Player
+quiz_game = QuizGame(quizMaster_npc, player1)
+
+
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+
+@app.route('/chat', methods=['POST', 'GET'])
+def chat():
+    # Get user input from the form
+    data = request.form
+    user_input = data['user_input']
+    bot_response = quiz_game.quiz_master.respond(user_input, quiz_game.quiz_master.input_variables)
+    return {'Response': bot_response}
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
