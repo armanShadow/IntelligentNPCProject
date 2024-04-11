@@ -1,5 +1,3 @@
-import json
-
 from QuizGame import QuizMaster, QuizGame, Player
 from dotenv import load_dotenv
 from flask import Flask, render_template, request
@@ -53,6 +51,12 @@ def chat():
     user_input = data['user_input']
     bot_response = quiz_game.quiz_master.respond(user_input, quiz_game.quiz_master.input_variables)
     return {'Response': bot_response}
+
+
+@app.route('/chatHistory', methods=['GET'])
+def getChatHistory():
+    chat_history = quiz_game.quiz_master.conversational_model.getChatHistoryString()
+    return {'ChatHistory': chat_history}
 
 
 if __name__ == '__main__':

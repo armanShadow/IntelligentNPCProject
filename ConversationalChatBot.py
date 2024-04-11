@@ -88,3 +88,10 @@ class ConversationalChatBot:
         self.chat_history.append(HumanMessage(content=user_input))
         self.chat_history.append(AIMessage(content=response["answer"]))
         return response["answer"]
+
+    def getChatHistoryString(self):
+        chat_history = []
+        for message in self.chat_history:
+            chat_history.append({"type": type(message).__name__, "content": message.content})
+        return chat_history
+

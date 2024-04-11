@@ -123,10 +123,12 @@
 		margin-left: 10px;
 		border-radius: 25px;
 		background-color: #82ccdd;
+		max-width: 50%;
 		padding: 10px;
 		position: relative;
 	}
 	.msg_cotainer_send{
+		max-width: 50%;
 		margin-top: auto;
 		margin-bottom: auto;
 		margin-right: 10px;
