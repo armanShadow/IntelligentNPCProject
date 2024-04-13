@@ -1,6 +1,10 @@
+import base64
+import os
+
 from QuizGame import QuizMaster, QuizGame, Player
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
+from SpeechTextTranslator import SpeechTextTranslator as stt
 
 app = Flask(__name__)
 load_dotenv()
@@ -47,6 +51,15 @@ quiz_game = QuizGame(quizMaster_npc, player1)
 def index():
     return render_template("index.html")
 
+@app.route('/output.wav')
+def stream_wav():
+    def generate():
+        with open("output.wav", "rb") as fwav:
+            data = fwav.read(1024)
+            while data:
+                yield data
+                data = fwav.read(1024)
+    return Response(generate(), mimetype="audio/x-wav")
 
 @app.route('/chat', methods=['POST', 'GET'])
 def chat():
@@ -54,8 +67,10 @@ def chat():
     data = request.form
     user_input = data['user_input']
     bot_response = quiz_game.quiz_master.respond(user_input, quiz_game.quiz_master.input_variables)
+    path = stt.translate_text_to_speech(bot_response)
+    file_name = os.path.basename(path).split('/')[-1]
     question, filtered_response = quiz_game.extractQuestion(bot_response)
-    return {'Response': filtered_response, "Question": question}
+    return {'Response': filtered_response, "Question": question, "TranslatedSpeechFile": file_name}
 
 
 @app.route('/chatHistory', methods=['GET'])
