@@ -1,7 +1,9 @@
+from random import shuffle
+
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain_community.document_loaders.web_base import WebBaseLoader
+from langchain_community.document_loaders.text import TextLoader
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -9,10 +11,9 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-
 class ConversationalChatBot:
-    def __init__(self, url, template_str):
-        self.docs = self.get_documents_from_web_url(url)
+    def __init__(self, path, template_str):
+        self.docs = self.get_documents(path)
         self.vectorStore = self.__create_db(self.docs)
         self.chain = self.create_chain(self.vectorStore, template_str)
         self.chat_history = []
@@ -23,11 +24,13 @@ class ConversationalChatBot:
         vector_store = Chroma.from_documents(docs, embedding=embedding)
         return vector_store
 
-    @staticmethod
-    def get_documents_from_web_url(url):
-        loader = WebBaseLoader(url)
-        docs = loader.load()
 
+    @staticmethod
+    def get_documents(path):
+
+        loader = TextLoader(file_path=path)
+        docs = loader.load()
+        shuffle(docs)
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=400,
             chunk_overlap=20
@@ -94,4 +97,3 @@ class ConversationalChatBot:
         for message in self.chat_history:
             chat_history.append({"type": type(message).__name__, "content": message.content})
         return chat_history
-

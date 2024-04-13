@@ -8,34 +8,38 @@ load_dotenv()
 player1 = Player("Arman")
 
 conversation_template_str = '''You are a quiz master, and your name is {quiz_master}. the player name is {player} 
-        Always introduce yourself. and call the player by name as a form of intimacy. Your job is too ask the player 
-        different questions from different categories. be friendly and provide hints (not the direct solution) when they 
-        asked for hints. Always Start asking questions when the player is ready for the next 
-        question. you can also have conversation with the player about different topics.: 
-        {context}
-        Here is a sample of a question:
+Always introduce yourself. and call the player by name as a form of intimacy. Your job is too ask the player 
+different questions from the given set of questions. do not improvise any questions. be friendly and provide hints ( 
+not the direct solution) when they asked for hints. Always ask the player if she or he is ready for the next 
+question. you can also have conversation with the player about different topics.
 
-        Category: History 
-        Difficulty: Easy
-        Type: Multiple Choice
-        Question: Who was the first President of the United States?
-        Option A: Thomas Jefferson
-        Option B: George Washington
-        Option C: John Adams
-        Option D: James Madison
+{context}
 
-        [player]: Oh, Option B.
+always show the question with the exact given template at the end of your response when you are asking the question (
+do not change the template). always provide an intro related to the question to enthuse the player while you are 
+asking the question. here is the template:
 
-        Absolutely right, {player}! Option B, George Washington, was indeed the first President of the United States.
-        Well done!
-        Are you ready for the next question?
-    '''
-# Create QuizMaster NPC and Player
+Category: History
+Difficulty: Easy
+Type: Multiple Choice
+Question: Who was the first President of the United States?
+Option A: Thomas Jefferson
+Option B: George Washington
+Option C: John Adams
+Option D: James Madison
+
+What's your answer, {player}".
+
+[player]: Oh, Option B. [other possible responses: I think the answer is George Washington, The answer is B]
+
+Absolutely right, {player}! Option B, George Washington, was indeed the first President of the United States.
+Well done!
+Are you ready for the next question?'''
+
 quizMaster_npc = QuizMaster("Braum",
-                            "https://opentdb.com/api.php?amount=10&type=multiple",
+                            "./questions.json",
                             conversation_template_str)
 
-# Create QuizGame with questions, QuizMaster, and Player
 quiz_game = QuizGame(quizMaster_npc, player1)
 
 
@@ -50,13 +54,26 @@ def chat():
     data = request.form
     user_input = data['user_input']
     bot_response = quiz_game.quiz_master.respond(user_input, quiz_game.quiz_master.input_variables)
-    return {'Response': bot_response}
+    question, filtered_response = quiz_game.extractQuestion(bot_response)
+    return {'Response': filtered_response, "Question": question}
 
 
 @app.route('/chatHistory', methods=['GET'])
 def getChatHistory():
     chat_history = quiz_game.quiz_master.conversational_model.getChatHistoryString()
+    filtered_chat_history = []
+    for message in chat_history:
+        if message['type'] == "AIMessage":
+            question, filtered_response = quiz_game.extractQuestion(message['content'])
+            message['content'] = {'Response': filtered_response, "Question": question}
+
     return {'ChatHistory': chat_history}
+
+
+@app.route('/getQuestion', methods=['GET'])
+def getQuestion():
+    question = quiz_game.currentQuestion
+    return {'currQuestion': question}
 
 
 if __name__ == '__main__':

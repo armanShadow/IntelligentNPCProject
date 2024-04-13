@@ -18,6 +18,9 @@ $(document).ready(function() {
         success: function(data)
         {
             creatBotMsgContainer(data['Response']);
+            if (data["Question"]['isDetected']){
+                loadQuestionContainer(data["Question"]);
+            }
         }
     });
     event.preventDefault();
@@ -27,17 +30,59 @@ $(document).ready(function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     getChatHistory();
+    getCurrentQuestion();
     }, false);
 
+function loadQuestionContainer(question) {
+
+    const questionSpan = document.getElementById("question");
+    const questionText = document.createTextNode(question['Question']);
+    questionSpan.innerHTML = '';
+    questionSpan.appendChild(questionText);
+    const categorySpan = document.getElementById("category");
+    const categoryText = document.createTextNode(question['Category'] + " -- ");
+    const difficultyText = document.createTextNode(question['Difficulty']);
+    categorySpan.innerHTML = '';
+    categorySpan.appendChild(categoryText);
+    categorySpan.appendChild(difficultyText);
+    const optionASpan = document.getElementById("optionA");
+    const optionAText = document.createTextNode(question['Options']['A']);
+    optionASpan.innerHTML = '';
+    optionASpan.appendChild(optionAText);
+    const optionBSpan = document.getElementById("optionB");
+    const optionBText = document.createTextNode(question['Options']['B']);
+    optionBSpan.innerHTML = '';
+    optionBSpan.appendChild(optionBText);
+    const optionCSpan = document.getElementById("optionC");
+    const optionCText = document.createTextNode(question['Options']['C']);
+    optionCSpan.innerHTML = '';
+    optionCSpan.appendChild(optionCText);
+    const optionDSpan = document.getElementById("optionD");
+    const optionDText = document.createTextNode(question['Options']['D']);
+    optionDSpan.innerHTML = '';
+    optionDSpan.appendChild(optionDText);
+}
+
+function getCurrentQuestion() {
+    $.ajax({
+        type: "GET",
+        url: "/getQuestion",
+        success: function(data)
+        {
+            if (data["currQuestion"] != null){
+                loadQuestionContainer(data["currQuestion"]);
+            }
+        }
+    });
+}
+
 function getChatHistory() {
-    let chat_history = null;
     $.ajax({
         type: "GET",
         url: "/chatHistory",
         success: function(data)
         {
-            chat_history = data["ChatHistory"];
-            loadMessageContainer(chat_history);
+            loadMessageContainer(data["ChatHistory"]);
         }
     });
 }
@@ -45,10 +90,13 @@ function getChatHistory() {
 function loadMessageContainer(chat_history) {
     for (let i = 0 ; i<chat_history.length; i++){
         if (chat_history[i].type == "HumanMessage"){
-            creatPlayerMsgContainer(chat_history[i].content);
+            creatPlayerMsgContainer(chat_history[i]['content']);
         }
         else {
-            creatBotMsgContainer(chat_history[i].content)
+            if (chat_history[i]['content']['Question']['isDetected']){
+                loadQuestionContainer(chat_history[i]["content"]['Question']);
+            }
+            creatBotMsgContainer(chat_history[i]['content']['Response']);
         }
     }
 }

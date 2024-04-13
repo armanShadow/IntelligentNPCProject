@@ -20,6 +20,8 @@
 		}
 		.msg_card_body{
 			overflow-y: auto;
+			scrollbar-color: #2f4052 #516d8b;
+  			scrollbar-width: thin;
 		}
 		.card-header{
 			border-radius: 15px 15px 0 0 !important;
@@ -107,6 +109,10 @@
 		margin-top: auto;
 		margin-bottom: auto;
 		margin-left: 15px;
+	}
+	.question{
+		font-size: 20px;
+		color: white;
 	}
 	.user_info span{
 		font-size: 20px;
