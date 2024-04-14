@@ -30,7 +30,7 @@ class QLearningAgent:
 game = QuizGame()
 agent = QLearningAgent()
 
-for episode in range(1000):
+for episode in range(100000):
     state = game.reset()
     done = False
 
