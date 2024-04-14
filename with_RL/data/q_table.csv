@@ -1,0 +1,17 @@
+State_Action,Q_Value
+"('easy', 'ask_easy')",3.589433972508453
+"('easy', 'ask_medium')",3.5741521947543555
+"('random_conversation', 'ask_easy')",3.405363686568634
+"('random_conversation', 'ask_medium')",3.4782324219341962
+"('random_conversation', 'respond')",3.9481116306924413
+"('random_conversation', 'ask_hard')",3.5376372133425047
+"('random_conversation', 'end_game')",0.250069403462029
+"('easy', 'respond')",3.63705655289115
+"('easy', 'end_game')",2.084625276388679
+"('easy', 'ask_hard')",3.5780210130110692
+"('medium', 'ask_easy')",13.628333417579457
+"('medium', 'ask_hard')",14.52567363630472
+"('medium', 'respond')",31.235005429928165
+"('medium', 'end_game')",6.104558765888214
+"('medium', 'ask_medium')",17.068040784013476
+"('hard', 'ask_easy')",10.499194667788595
