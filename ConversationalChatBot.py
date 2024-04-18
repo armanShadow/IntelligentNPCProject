@@ -1,22 +1,21 @@
-from random import shuffle
 
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.history_aware_retriever import create_history_aware_retriever
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain_community.document_loaders.text import TextLoader
+from langchain.chains.query_constructor.schema import AttributeInfo
+from langchain.retrievers import SelfQueryRetriever
+from langchain.retrievers.self_query.chroma import ChromaTranslator
+from langchain_community.document_loaders.json_loader import JSONLoader
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 class ConversationalChatBot:
-    def __init__(self, path, template_str):
-        self.docs = self.get_documents(path)
-        self.vectorStore = self.__create_db(self.docs)
-        self.chain = self.create_chain(self.vectorStore, template_str)
+    def __init__(self, path, template_str, sample_conversation):
+        self.vectorStore = self.__create_db(self.get_documents(path))
+        self.retrieval_chain, self.stuff_chain = self.create_chain(self.vectorStore, template_str)
         self.chat_history = []
+        self.sample_conversation = sample_conversation
 
     @staticmethod
     def __create_db(docs):
@@ -24,19 +23,23 @@ class ConversationalChatBot:
         vector_store = Chroma.from_documents(docs, embedding=embedding)
         return vector_store
 
-
     @staticmethod
     def get_documents(path):
+        def metadata_func(record: dict, metadata: dict) -> dict:
+            metadata["difficulty"] = record.get("difficulty")
+            metadata["category"] = record.get("category")
+            metadata["asked"] = record.get("asked")
+            return metadata
 
-        loader = TextLoader(file_path=path)
+        loader = JSONLoader(
+            file_path=path,
+            jq_schema='.results[]',
+            metadata_func=metadata_func,
+            text_content=False)
+
         docs = loader.load()
-        shuffle(docs)
-        splitter = RecursiveCharacterTextSplitter(
-            chunk_size=400,
-            chunk_overlap=20
-        )
-        split_docs = splitter.split_documents(docs)
-        return split_docs
+
+        return docs
 
     @staticmethod
     def create_chain(vector_store, template_str):
@@ -47,50 +50,83 @@ class ConversationalChatBot:
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", template_str),
+            MessagesPlaceholder(variable_name="sample_conversation"),
+            ("human", "Follow the above sample conversation to generate response"),
             MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}")]
+            ("human", "{user_input}")]
         )
 
         # chain = prompt | model
-        chain = create_stuff_documents_chain(
+        stuff_chain = create_stuff_documents_chain(
             llm=model,
-            prompt=prompt
+            prompt=prompt,
         )
 
-        retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+        metadata_field_info = [
+
+            AttributeInfo(
+                name="category",
+                description="The category of the question",
+                type="string",
+            ),
+            AttributeInfo(
+                name="difficulty",
+                description="The difficulty of the question. One of ['easy', 'medium', 'hard']",
+                type="string",
+            ),
+
+            AttributeInfo(
+                name="asked",
+                description="if the question is asked before. One of ['false', 'true']",
+                type="String"
+            ),
+        ]
+
+        document_content_description = "set of different questions"
+
+        retriever = SelfQueryRetriever.from_llm(
+            model,
+            vector_store,
+            document_content_description,
+            metadata_field_info,
+            structuredQueryTranslator=ChromaTranslator(),
+            search_kwargs={"k": 1}
+        )
 
         retriever_prompt = ChatPromptTemplate.from_messages([
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}"),
             ("human",
-             "Given the above conversation, generate a search query to look up in order to get information relevant "
-             "to the conversation")
+             "attribute asked is equal to {asked} and Attribute difficulty equal to {difficulty}."),
         ])
 
-        history_aware_retriever = create_history_aware_retriever(
-            llm=model,
-            retriever=retriever,
-            prompt=retriever_prompt
-        )
+        retrieval_chain = retriever_prompt | retriever
 
-        retrieval_chain = create_retrieval_chain(
-            # retriever,
-            history_aware_retriever,
-            chain
-        )
+        return retrieval_chain, stuff_chain
 
-        return retrieval_chain
-
-    def generate_response(self, user_input, input_variables):
+    def generate_response(self, user_input, stuff_input_variables, retrieval_input_variables):
+        retrieved_docs = self.retrieval_chain.invoke(retrieval_input_variables)
+        print(retrieved_docs)
         temp_dict = {
-            "input": user_input,
-            "chat_history": self.chat_history
+            "user_input": user_input,
+            "chat_history": self.chat_history,
+            "sample_conversation": self.sample_conversation,
+            "context": retrieved_docs
         }
-        temp_dict.update(input_variables)
-        response = self.chain.invoke(temp_dict)
+        temp_dict.update(stuff_input_variables)
+        response = self.stuff_chain.invoke(temp_dict)
+
+        all_docs = self.vectorStore.get()
+        for retrieved_doc in retrieved_docs:
+            for doc in all_docs['documents']:
+                if doc == retrieved_doc.page_content:
+                    doc_index = all_docs['documents'].index(doc)
+                    doc_id = all_docs['ids'][doc_index]
+                    retrieved_doc.metadata.update({"asked": 'true'})
+                    self.vectorStore.update_document(doc_id, retrieved_doc)
+                    break
+
         self.chat_history.append(HumanMessage(content=user_input))
-        self.chat_history.append(AIMessage(content=response["answer"]))
-        return response["answer"]
+        self.chat_history.append(AIMessage(content=response))
+        return response
 
     def getChatHistoryString(self):
         chat_history = []

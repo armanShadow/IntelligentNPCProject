@@ -3,10 +3,12 @@ import re
 
 
 class QuizMaster(IntelligentNPC):
-    def __init__(self, name, questions_path, conversation_template_str):
-        super().__init__(questions_path, conversation_template_str)
+    def __init__(self, name, questions_path, conversation_template_str, sample_conversation):
+        super().__init__(questions_path, conversation_template_str, sample_conversation)
         self.name = name
-        self.input_variables = None
+        self.retrieval_input_variables = {}
+        self.stuff_input_variables = {}
+
 
     def selectQuestion(self, questions):
         pass
@@ -30,7 +32,7 @@ class Player:
 class QuizGame:
     def __init__(self, quiz_master, player):
         self.quiz_master = quiz_master
-        self.quiz_master.input_variables = {"quiz_master": quiz_master.name, "player": player.name}
+        self.quiz_master.stuff_input_variables = {"quiz_master": quiz_master.name, "player": player.name}
         self.player = player
         self.currentQuestion = None
 
@@ -58,6 +60,7 @@ class QuizGame:
 
             question = {"Category": raw_response[10 + category_index:difficulty_index - 1],
                         "Difficulty": raw_response[12 + difficulty_index:type_index - 1],
+                        "Type": raw_response[6 + type_index:question_index - 1],
                         "Question": raw_response[10 + question_index:option_a_index - 1],
                         "Options": options,
                         "isDetected": True}
