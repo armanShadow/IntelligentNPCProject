@@ -37,6 +37,11 @@
         {
             "intent": "affirm_hint",
             "text": [
+                "Yes, I would like to use my hints.",
+                "Absolutely, I'd appreciate a hint.",
+                "Yes, I'm certain a hint would be beneficial.",
+                "Absolutely, I could use a hint right now.",
+                "Yes, I'm interested in getting a hint.",
                 "Yes, please provide me with a hint.",
                 "I'm certain I could use a hint right now.",
                 "Absolutely, I'm ready for a hint.",
@@ -44,7 +49,6 @@
                 "Indeed, I'm confident I could benefit from a hint.",
                 "Sure, go ahead and give me a hint.",
                 "Yes, I'm positive I'd like a hint for this question.",
-                "Definitely, I'm ready to receive a hint.",
                 "Yes, I'm sure a hint would be helpful in this situation.",
                 "Absolutely, I'm sure I could use some guidance.",
                 "Yes, I'm certain a hint would be beneficial.",
@@ -55,8 +59,7 @@
                 "Yes, I'm certain I need a hint to move forward.",
                 "Absolutely, I'm ready to accept a hint to progress.",
                 "Yes, I'm positive I'd benefit from a hint at this stage.",
-                "I'm sure I could use some assistance. Please provide a hint.",
-                "Definitely, I'm ready for a hint to help me out."
+                "I'm sure I could use some assistance. Please provide a hint."
             ]
         },
         {
@@ -240,6 +243,16 @@
         {
             "intent": "need_hint",
             "text": [
+                "Hmm, I'm a bit unsure.",
+                "I'm not entirely sure about that.",
+                "Hmm, I'm feeling a bit stuck.",
+                "I'm uncertain about this one.",
+                "Hmm, I'm not confident in my answer.",
+                "I'm feeling hesitant on this.",
+                "Hmm, I could use some help here.",
+                "I'm a little unsure of what to do next.",
+                "Hmm, I'm feeling a bit lost here.",
+                "I'm not quite sure what to make of this.",
                 "I'm stuck on this question. Can I get a hint?",
                 "Could you please provide me with a hint for this problem?",
                 "I need some assistance with this question.",

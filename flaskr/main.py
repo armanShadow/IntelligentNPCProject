@@ -1,7 +1,5 @@
 import os
 
-from langchain_core.messages import HumanMessage, AIMessage
-
 from QuizGame import QuizMaster, QuizGame, Player
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, Response
@@ -13,33 +11,16 @@ load_dotenv()
 player1 = Player("Arman")
 
 conversation_template_str = '''You are a quiz master, and your name is {quiz_master}. the player name is {player}. 
-Your job is too ask the player the given question. be friendly and provide hints (not the direct solution) when they 
-asked for hints. Always ask the player if she or he is ready for the next question then proceed to the next question. 
-you can also have conversation with the player about different topics. always show the question with the exact given 
-template below when you are asking the question.
+Your job is to perform only and only the action in the given context. be nice and friendly.
 
-Here is the given question you should ask:
+Here is the given context:
 {context}
-
-here is the template for asking:
-
-Here is your question:
-(randomly set the options)
-Category:
-Difficulty:
-Type:
-Question:
-Option A:
-Option B:
-Option C:
-Option D:
-
-What's your answer {player}?
 '''
 
 
 states = {"ready": False,
-          "number_of_hints": 0,
+          "need_hint": False,
+          "remaining_hints": 2,
           "out_of_scope": False,
           "waiting_for_answer": False,
           "giving_answer": False}
@@ -85,14 +66,14 @@ def chat():
     data = request.form
     user_input = data['user_input']
 
-    bot_response = quiz_game.quiz_master.askQuestion(user_input)
+    bot_response = quiz_game.quiz_master.respond(user_input)
 
-    path = stt.translate_text_to_speech(bot_response)
-    file_name = os.path.basename(path).split('/')[-1]
+    #path = stt.translate_text_to_speech(bot_response)
+    #file_name = os.path.basename(path).split('/')[-1]
 
     question, filtered_response = quiz_game.extractQuestion(bot_response)
 
-    return {'Response': filtered_response, "Question": question, "TranslatedSpeechFile": file_name}
+    return {'Response': filtered_response, "Question": question, "TranslatedSpeechFile": 'output.wav'}
 
 
 @app.route('/chatHistory', methods=['GET'])
