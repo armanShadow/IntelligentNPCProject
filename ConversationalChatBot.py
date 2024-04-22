@@ -11,8 +11,8 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 class ConversationalChatBot:
     def __init__(self, path, template_str):
-        self.vectorStore = self.__create_db(self.get_documents(path))
-        self.retrieval_chain, self.stuff_chain = self.create_chain(self.vectorStore, template_str)
+        self.vectorStore = self.__create_db(self.__get_documents(path))
+        self.retrieval_chain, self.stuff_chain = self.__create_chain(self.vectorStore, template_str)
         self.chat_history = []
 
     @staticmethod
@@ -22,7 +22,7 @@ class ConversationalChatBot:
         return vector_store
 
     @staticmethod
-    def get_documents(path):
+    def __get_documents(path):
         def metadata_func(record: dict, metadata: dict) -> dict:
             metadata["difficulty"] = record.get("difficulty")
             metadata["category"] = record.get("category")
@@ -40,7 +40,7 @@ class ConversationalChatBot:
         return docs
 
     @staticmethod
-    def create_chain(vector_store, template_str):
+    def __create_chain(vector_store, template_str):
         model = ChatOpenAI(
             model="gpt-3.5-turbo-1106",
             temperature=0.4
@@ -48,8 +48,6 @@ class ConversationalChatBot:
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", template_str),
-            MessagesPlaceholder(variable_name="sample_conversation"),
-            ("human", "Follow the above sample conversation to generate response"),
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{user_input}")]
         )

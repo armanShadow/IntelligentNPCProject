@@ -37,11 +37,6 @@ Option D:
 What's your answer {player}?
 '''
 
-sample_conversation = [HumanMessage(content="Hey"),
-                       AIMessage(content="Hi {player}, my name is {quiz_master}. Are you Ready for a fun quiz?"),
-                       HumanMessage(content="Yes!"),
-                       AIMessage(content="Great, here is the first question: {context}\n What's your answer {player}"),
-                       ]
 
 states = {"ready": False,
           "number_of_hints": 0,
@@ -59,7 +54,6 @@ rl_states = {"difficulty": "easy",
 quizMaster_npc = QuizMaster("Braum",
                             "data/questions2.json",
                             conversation_template_str,
-                            sample_conversation,
                             'models/Intent_Classification.keras',
                             'utils/tokenizer.pkl',
                             states,

@@ -5,7 +5,6 @@ import re
 class QuizMaster(IntelligentNPC):
     def __init__(self, name, questions_path,
                  conversation_template_str,
-                 sample_conversation,
                  intent_model_path,
                  intent_tokenizer_path,
                  states,
@@ -19,7 +18,7 @@ class QuizMaster(IntelligentNPC):
 
         self.name = name
         self.retrieval_input_variables = {}
-        self.stuff_input_variables = {"sample_conversation": sample_conversation}
+        self.stuff_input_variables = {}
 
     def selectQuestion(self):
         difficulty = self.getRLStates()['difficulty']
