@@ -1,3 +1,0 @@
-OPEN_AI_MODEL = "gpt-3.5-turbo-1106"
-NUM_DOCS_TO_BE_RETRIEVED = 3 # number of documents to be retrieved from the vector store of chroma db database.
-TEMPERATURE = 0  # The temperature value ranges from 0 to 2, with lower values indicating greater determinism and higher values indicating more randomness. When the temperature is set to a lower value, the probability distribution of tokens becomes narrower and taller.
