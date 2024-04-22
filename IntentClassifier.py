@@ -1,3 +1,5 @@
+import pickle
+
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing.text import Tokenizer
@@ -74,7 +76,6 @@ output_dim = categorical_vec.shape[1]
 input_dim = len(unique_intents)
 print("Input Dimension :{},\nOutput Dimension :{}".format(input_dim, output_dim))
 
-
 model = tf.keras.models.Sequential([
     tf.keras.layers.Embedding(len(tokenizer.word_index) + 1, embed_dim),
     tf.keras.layers.LSTM(lstm_num, dropout=0.1),
@@ -91,7 +92,7 @@ model.compile(loss='categorical_crossentropy', optimizer=Nadam, metrics=['accura
 history = model.fit(padded_sequences, categorical_vec, epochs=epochs, batch_size=32, verbose=1,
                     validation_data=(padded_sequences, categorical_vec))
 
-test_text_inputs = ["I think Tehran might be the correct option"]
+test_text_inputs = ["I'm afraid not"]
 
 test_intents = ["giving_answer"]
 
@@ -105,15 +106,23 @@ tokens = tokenizer.texts_to_sequences(test_text_inputs)
 tokens = pad_sequences(tokens, maxlen=6000)
 prediction = model.predict(np.array(tokens))
 pred = np.argmax(prediction)
-classes = ['affirm_ready', 'affirm_hint', 'giving_answer', 'need_hint']
+classes = ['affirm_ready', 'affirm_hint', 'giving_answer', 'need_hint', 'affirm', 'decline', 'greetings']
 print(prediction)
 print(classes[pred])
 model.save('models/Intent_Classification.keras')
 
+with open('utils/tokenizer.pkl', 'wb') as file:
+    pickle.dump(tokenizer, file)
+
 model2 = load_model('models/Intent_Classification.keras')
 model2.compile(loss='categorical_crossentropy', optimizer=Nadam, metrics=['accuracy'])
 
-prediction2 = model2.predict(np.array(tokens))
+with open('utils/tokenizer.pkl', 'rb') as handle:
+    tokenizer2 = pickle.load(handle)
+
+tokens2 = tokenizer2.texts_to_sequences(test_text_inputs)
+tokens2 = pad_sequences(tokens2, maxlen=6000)
+prediction2 = model2.predict(np.array(tokens2))
 pred2 = np.argmax(prediction2)
 print(prediction2)
 print(classes[pred2])

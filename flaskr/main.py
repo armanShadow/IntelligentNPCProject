@@ -43,10 +43,27 @@ sample_conversation = [HumanMessage(content="Hey"),
                        AIMessage(content="Great, here is the first question: {context}\n What's your answer {player}"),
                        ]
 
+states = {"ready": False,
+          "number_of_hints": 0,
+          "out_of_scope": False,
+          "waiting_for_answer": False,
+          "giving_answer": False}
+
+rl_states = {"difficulty": "easy",
+             "consecutive_number": 0,
+             "incorrect_answers": 0,
+             "need_hint": False,
+             "number_of_hints": 0
+             }
+
 quizMaster_npc = QuizMaster("Braum",
-                            "./questions2.json",
+                            "data/questions2.json",
                             conversation_template_str,
-                            sample_conversation)
+                            sample_conversation,
+                            'models/Intent_Classification.keras',
+                            'utils/tokenizer.pkl',
+                            states,
+                            rl_states)
 
 quiz_game = QuizGame(quizMaster_npc, player1)
 
@@ -73,12 +90,14 @@ def chat():
     # Get user input from the form
     data = request.form
     user_input = data['user_input']
-    quiz_game.quiz_master.retrieval_input_variables.update({"difficulty": "easy", "asked": "false"})
-    bot_response = quiz_game.quiz_master.respond(user_input, quiz_game.quiz_master.stuff_input_variables,
-                                                 quiz_game.quiz_master.retrieval_input_variables)
+
+    bot_response = quiz_game.quiz_master.askQuestion(user_input)
+
     path = stt.translate_text_to_speech(bot_response)
     file_name = os.path.basename(path).split('/')[-1]
+
     question, filtered_response = quiz_game.extractQuestion(bot_response)
+
     return {'Response': filtered_response, "Question": question, "TranslatedSpeechFile": file_name}
 
 

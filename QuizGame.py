@@ -3,18 +3,35 @@ import re
 
 
 class QuizMaster(IntelligentNPC):
-    def __init__(self, name, questions_path, conversation_template_str, sample_conversation):
-        super().__init__(questions_path, conversation_template_str, sample_conversation)
+    def __init__(self, name, questions_path,
+                 conversation_template_str,
+                 sample_conversation,
+                 intent_model_path,
+                 intent_tokenizer_path,
+                 states,
+                 rl_states):
+        super().__init__(questions_path,
+                         conversation_template_str,
+                         intent_model_path,
+                         intent_tokenizer_path,
+                         states,
+                         rl_states)
+
         self.name = name
         self.retrieval_input_variables = {}
-        self.stuff_input_variables = {}
+        self.stuff_input_variables = {"sample_conversation": sample_conversation}
 
+    def selectQuestion(self):
+        difficulty = self.getRLStates()['difficulty']
+        self.retrieval_input_variables.update({"difficulty": difficulty, "asked": "false"})
+        question = self.retrieve_docs(self.retrieval_input_variables)
+        self.deleteDocs(question)
+        return question
 
-    def selectQuestion(self, questions):
-        pass
-
-    def askQuestion(self, question):
-        pass
+    def askQuestion(self, user_input):
+        question = self.selectQuestion()
+        self.stuff_input_variables.update({'context': question, 'user_input': user_input})
+        return self.respond(self.stuff_input_variables)
 
     def provide_feedback(self):
         pass
@@ -32,7 +49,7 @@ class Player:
 class QuizGame:
     def __init__(self, quiz_master, player):
         self.quiz_master = quiz_master
-        self.quiz_master.stuff_input_variables = {"quiz_master": quiz_master.name, "player": player.name}
+        self.quiz_master.stuff_input_variables.update({"quiz_master": quiz_master.name, "player": player.name})
         self.player = player
         self.currentQuestion = None
 

@@ -268,6 +268,81 @@
                 "I'm feeling a bit lost here. Could you offer some assistance?",
                 "This question is puzzling me. Can you provide some tips or hints?"
             ]
+        },
+        {
+            "intent": "affirm",
+            "text": [
+                "Yes.",
+                "Indeed.",
+                "That's correct.",
+                "Absolutely.",
+                "Affirmative.",
+                "Right.",
+                "Correct.",
+                "Yeah.",
+                "Yup.",
+                "Definitely.",
+                "That's right.",
+                "Exactly.",
+                "Sure.",
+                "Of course.",
+                "Absolutely right",
+                "Indeed it is.",
+                "Couldn't agree more.",
+                "No doubt about it.",
+                "Yes, I am.",
+                "Absolutely, I am.",
+                "Yeah, I am.",
+                "That's correct, I am indeed on board with that.",
+                "Absolutely, count me in!",
+                "Totally, I'm down with that.",
+                "Totally, that sounds good to me.",
+                "Yup, that works for me!",
+                "For sure, I'm with you!",
+                "Totally, I'm cool with that!",
+                "Absolutely, let's do it!"
+            ]
+        },
+        {
+            "intent": "decline",
+            "text": [
+                "No, thank you.",
+                "I'll pass.",
+                "No, I'm not interested.",
+                "Thanks, but no thanks.",
+                "Sorry, I can't.",
+                "Not for me, thanks.",
+                "I appreciate it, but I'll decline.",
+                "No, I'm good.",
+                "I'll have to decline this time.",
+                "I'm afraid I'll have to say no.",
+                "No, I'm not",
+                "No, I don't",
+                "No, I can't"
+            ]
+        },
+        {
+            "intent": "greetings",
+            "text": [
+                "Hi there!",
+                "Hello!",
+                "Hey!",
+                "Good morning!",
+                "Good afternoon!",
+                "Good evening!",
+                "Hi, how are you?",
+                "Hey, how's it going.",
+                "Hello, nice to meet you!",
+                "Hiya!",
+                "Hi, what's up?",
+                "Hey, how have you been?",
+                "Hello, how's your day going?",
+                "Good to see you!",
+                "Hey there, long time no see!",
+                "Hi, how's everything with you?",
+                "Hello, how's life treating you?",
+                "Hey, howdy!"
+            ]
         }
     ]
 }

@@ -1,4 +1,3 @@
-
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.query_constructor.schema import AttributeInfo
 from langchain.retrievers import SelfQueryRetriever
@@ -11,11 +10,10 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 
 class ConversationalChatBot:
-    def __init__(self, path, template_str, sample_conversation):
+    def __init__(self, path, template_str):
         self.vectorStore = self.__create_db(self.get_documents(path))
         self.retrieval_chain, self.stuff_chain = self.create_chain(self.vectorStore, template_str)
         self.chat_history = []
-        self.sample_conversation = sample_conversation
 
     @staticmethod
     def __create_db(docs):
@@ -102,20 +100,24 @@ class ConversationalChatBot:
 
         return retrieval_chain, stuff_chain
 
-    def generate_response(self, user_input, stuff_input_variables, retrieval_input_variables):
+    def retrieve_docs(self, retrieval_input_variables):
         retrieved_docs = self.retrieval_chain.invoke(retrieval_input_variables)
-        print(retrieved_docs)
+        return retrieved_docs
+
+    def generate_response(self, stuff_input_variables):
         temp_dict = {
-            "user_input": user_input,
             "chat_history": self.chat_history,
-            "sample_conversation": self.sample_conversation,
-            "context": retrieved_docs
         }
         temp_dict.update(stuff_input_variables)
         response = self.stuff_chain.invoke(temp_dict)
 
+        self.chat_history.append(HumanMessage(content=stuff_input_variables['user_input']))
+        self.chat_history.append(AIMessage(content=response))
+        return response
+
+    def deleteDocs(self, docs):
         all_docs = self.vectorStore.get()
-        for retrieved_doc in retrieved_docs:
+        for retrieved_doc in docs:
             for doc in all_docs['documents']:
                 if doc == retrieved_doc.page_content:
                     doc_index = all_docs['documents'].index(doc)
@@ -123,10 +125,6 @@ class ConversationalChatBot:
                     retrieved_doc.metadata.update({"asked": 'true'})
                     self.vectorStore.update_document(doc_id, retrieved_doc)
                     break
-
-        self.chat_history.append(HumanMessage(content=user_input))
-        self.chat_history.append(AIMessage(content=response))
-        return response
 
     def getChatHistoryString(self):
         chat_history = []
