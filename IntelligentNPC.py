@@ -13,8 +13,8 @@ class IntelligentNPC:
         self.conversational_model = ConversationalChatBot(path, conversation_template_str)
         self.dialogueManager = DialogueManager(model_path, tokenizer_path, states, rl_states)
 
-    def respond(self, stuff_input_variables):
-        return self.conversational_model.generate_response(stuff_input_variables)
+    def respond(self, input_variables):
+        return self.conversational_model.generate_response(input_variables)
 
     def retrieve_docs(self, retrieval_input_variables):
         retrieved_docs = self.conversational_model.retrieve_docs(retrieval_input_variables)
