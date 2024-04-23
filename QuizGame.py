@@ -7,12 +7,14 @@ class QuizMaster(IntelligentNPC):
                  conversation_template_str,
                  intent_model_path,
                  intent_tokenizer_path,
+                 q_table_path,
                  states,
                  rl_states):
         super().__init__(questions_path,
                          conversation_template_str,
                          intent_model_path,
                          intent_tokenizer_path,
+                         q_table_path,
                          states,
                          rl_states)
 
@@ -50,10 +52,10 @@ class QuizMaster(IntelligentNPC):
             if self.getStates()['need_hint']:
                 response = self.provideHint()
             else:
-                response = self.askQuestion()
+                response = self.takeAction()
 
         elif user_intent == "affirm_ready":
-            response = self.askQuestion()
+            response = self.takeAction()
 
         elif user_intent == "affirm_hint":
             response = self.provideHint()
@@ -97,13 +99,44 @@ class QuizMaster(IntelligentNPC):
         self.input_variables.update({'context': context})
         return super().respond(self.input_variables)
 
+    def endGame(self):
+        response = ''
+        return response
+
+    def takeAction(self):
+        action = self.getAction(self.getRLStates())
+        if action == 'ask_easy':
+            self.updateRLStates({'difficulty': 'easy'})
+            response = self.askQuestion()
+        elif action == 'ask_medium':
+            self.updateRLStates({'difficulty': 'medium'})
+            response = self.askQuestion()
+        elif action == 'ask_hard':
+            self.updateRLStates({'difficulty': 'hard'})
+            response = self.askQuestion()
+        else:
+            response = self.endGame()
+
+        return response
+
     def provideFeedback(self):
         print('action: provideFeedback')
         context = (f"The player has given the answer for this question:\n{self.current_question}\n" 
-                   "check the answer and provide feedback, then ask if "
-                   "the player is ready for the next question")
+                   "check the answer and provide feedback. always put 'Correct!' or 'Incorrect!' at the start of your "
+                   "feedback, then ask if the player is ready for the next question")
         self.input_variables.update({'context': context})
-        return super().respond(self.input_variables)
+        response = super().respond(self.input_variables)
+        self.updateCorrectIncorrect(response)
+        return response
+
+    def updateCorrectIncorrect(self, response):
+        if response[0:7] == "Correct":
+            correct_answers = self.getRLStates()['correct_answers']
+            self.updateRLStates({'correct_answers': correct_answers + 1})
+        else:
+            incorrect_answers = self.getRLStates()['incorrect_answers']
+            self.updateRLStates({'incorrect_answers': incorrect_answers + 1})
+        print(self.getRLStates())
 
     def informNumberOfHints(self):
         print('action: informNumberOfHints')

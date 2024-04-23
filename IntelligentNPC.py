@@ -1,5 +1,6 @@
 from ConversationalChatBot import ConversationalChatBot
 from DialogueManager import DialogueManager
+from Qtable import Qtable
 
 
 class IntelligentNPC:
@@ -7,11 +8,12 @@ class IntelligentNPC:
                  conversation_template_str,
                  model_path,
                  tokenizer_path,
+                 q_table_path,
                  states,
                  rl_states):
-
         self.conversational_model = ConversationalChatBot(path, conversation_template_str)
         self.dialogueManager = DialogueManager(model_path, tokenizer_path, states, rl_states)
+        self.q_table = Qtable(q_table_path)
 
     def respond(self, input_variables):
         return self.conversational_model.generate_response(input_variables)
@@ -37,3 +39,6 @@ class IntelligentNPC:
 
     def getStates(self):
         return self.dialogueManager.state_tracker.getStates()
+
+    def getAction(self, rl_states):
+        return self.q_table.getAction(rl_states)

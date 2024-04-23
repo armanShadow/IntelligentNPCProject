@@ -26,10 +26,8 @@ states = {"ready": False,
           "giving_answer": False}
 
 rl_states = {"difficulty": "easy",
-             "consecutive_number": 0,
+             "correct_answers": 0,
              "incorrect_answers": 0,
-             "need_hint": False,
-             "number_of_hints": 0
              }
 
 quizMaster_npc = QuizMaster("Braum",
@@ -37,6 +35,7 @@ quizMaster_npc = QuizMaster("Braum",
                             conversation_template_str,
                             'models/Intent_Classification.keras',
                             'utils/tokenizer.pkl',
+                            "rl_data/q_table_Sarsa.csv",
                             states,
                             rl_states)
 
@@ -68,8 +67,8 @@ def chat():
 
     bot_response = quiz_game.quiz_master.respond(user_input)
 
-    #path = stt.translate_text_to_speech(bot_response)
-    #file_name = os.path.basename(path).split('/')[-1]
+    path = stt.translate_text_to_speech(bot_response)
+    file_name = os.path.basename(path).split('/')[-1]
 
     question, filtered_response = quiz_game.extractQuestion(bot_response)
 

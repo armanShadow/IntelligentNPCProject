@@ -18,7 +18,7 @@ $(document).ready(function() {
         success: function(data)
         {
             const snd = new Audio(data['TranslatedSpeechFile']);
-            //snd.play();
+            snd.play();
             creatBotMsgContainer(data['Response']);
             if (data["Question"]['isDetected']){
                 loadQuestionContainer(data["Question"]);
