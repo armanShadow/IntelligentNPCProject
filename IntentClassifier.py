@@ -3,6 +3,8 @@ import pickle
 import tensorflow as tf
 import numpy as np
 from keras.src.regularizers import regularizers
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Sequential, Model, load_model
@@ -67,16 +69,17 @@ print(index_to_intent)
 categorical_vec = tf.keras.utils.to_categorical(categorical_target,
                                                 num_classes=num_classes)
 
-print('Shape of Ca', categorical_vec.shape)
+print('Shape of Categorical', categorical_vec.shape)
 print(categorical_vec[:5])
 
-epochs = 60
+epochs = 15
 embed_dim = 300
 lstm_num = 50
 output_dim = categorical_vec.shape[1]
 input_dim = len(unique_intents)
 print("Input Dimension :{},\nOutput Dimension :{}".format(input_dim, output_dim))
 
+x, x_test, y, y_test = train_test_split(padded_sequences, categorical_vec)
 model = tf.keras.models.Sequential([
     tf.keras.layers.Embedding(len(tokenizer.word_index) + 1, embed_dim),
     tf.keras.layers.LSTM(lstm_num, dropout=0.1, kernel_regularizer=regularizers.L2(0.001)),
@@ -85,13 +88,61 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(output_dim, activation='softmax')
 ])
 
-model.summary()
+#model.summary()
 
 Nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 model.compile(loss='categorical_crossentropy', optimizer=Nadam, metrics=['accuracy'])
 
-history = model.fit(padded_sequences, categorical_vec, epochs=epochs, batch_size=32, verbose=1,
-                    validation_data=(padded_sequences, categorical_vec))
+history = model.fit(x, y, epochs=epochs, batch_size=32, verbose=1,
+                    validation_data=(x_test, y_test))
+
+base_model = tf.keras.models.Sequential([
+    tf.keras.layers.Embedding(len(tokenizer.word_index) + 1, embed_dim),
+    tf.keras.layers.LSTM(lstm_num,),
+    tf.keras.layers.Dense(output_dim, activation='softmax')
+])
+
+Nadam = tf.keras.optimizers.Nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+base_model.compile(loss='categorical_crossentropy', optimizer=Nadam, metrics=['accuracy', 'loss'])
+
+base_history = model.fit(x, y, epochs=epochs, batch_size=32, verbose=1,
+                    validation_data=(x_test, y_test))
+
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+# summarize history for accuracy
+plt.plot(base_history.history['accuracy'])
+plt.plot(base_history.history['val_accuracy'])
+plt.title('base model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+# summarize history for loss
+plt.plot(base_history.history['loss'])
+plt.plot(base_history.history['val_loss'])
+plt.title('base model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+
 
 test_text_inputs = ["Indeed"]
 
