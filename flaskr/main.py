@@ -18,12 +18,10 @@ Here is the given context:
 '''
 
 
-states = {"ready": False,
-          "need_hint": False,
+states = {"need_hint": False,
           "remaining_hints": 2,
-          "out_of_scope": False,
-          "waiting_for_answer": False,
-          "giving_answer": False}
+          "score": 0
+          }
 
 rl_states = {"difficulty": "easy",
              "correct_answers": 0,
@@ -67,8 +65,8 @@ def chat():
 
     bot_response = quiz_game.quiz_master.respond(user_input)
 
-    path = stt.translate_text_to_speech(bot_response)
-    file_name = os.path.basename(path).split('/')[-1]
+    #path = stt.translate_text_to_speech(bot_response)
+    #file_name = os.path.basename(path).split('/')[-1]
 
     question, filtered_response = quiz_game.extractQuestion(bot_response)
 

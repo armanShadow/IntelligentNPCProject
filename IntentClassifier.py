@@ -2,6 +2,7 @@ import pickle
 
 import tensorflow as tf
 import numpy as np
+from keras.src.regularizers import regularizers
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Sequential, Model, load_model
@@ -69,7 +70,7 @@ categorical_vec = tf.keras.utils.to_categorical(categorical_target,
 print('Shape of Ca', categorical_vec.shape)
 print(categorical_vec[:5])
 
-epochs = 50
+epochs = 60
 embed_dim = 300
 lstm_num = 50
 output_dim = categorical_vec.shape[1]
@@ -78,8 +79,8 @@ print("Input Dimension :{},\nOutput Dimension :{}".format(input_dim, output_dim)
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Embedding(len(tokenizer.word_index) + 1, embed_dim),
-    tf.keras.layers.LSTM(lstm_num, dropout=0.1),
-    tf.keras.layers.Dense(lstm_num, activation='relu'),
+    tf.keras.layers.LSTM(lstm_num, dropout=0.1, kernel_regularizer=regularizers.L2(0.001)),
+    tf.keras.layers.Dense(lstm_num, activation='relu', kernel_regularizer=regularizers.L2(0.001)),
     tf.keras.layers.Dropout(0.4),
     tf.keras.layers.Dense(output_dim, activation='softmax')
 ])
@@ -92,7 +93,7 @@ model.compile(loss='categorical_crossentropy', optimizer=Nadam, metrics=['accura
 history = model.fit(padded_sequences, categorical_vec, epochs=epochs, batch_size=32, verbose=1,
                     validation_data=(padded_sequences, categorical_vec))
 
-test_text_inputs = ["I'm afraid not"]
+test_text_inputs = ["Indeed"]
 
 test_intents = ["giving_answer"]
 
@@ -106,7 +107,8 @@ tokens = tokenizer.texts_to_sequences(test_text_inputs)
 tokens = pad_sequences(tokens, maxlen=6000)
 prediction = model.predict(np.array(tokens))
 pred = np.argmax(prediction)
-classes = ['affirm_ready', 'affirm_hint', 'giving_answer', 'need_hint', 'affirm', 'decline', 'greetings']
+classes = ['oos', 'affirm_ready', 'affirm_hint', 'giving_answer', 'need_hint', 'affirm',
+           "decline_ready", "decline_hint", 'decline', 'greetings']
 print(prediction)
 print(classes[pred])
 model.save('models/Intent_Classification.keras')

@@ -15,7 +15,8 @@ class IntelligentNPC:
         self.dialogueManager = DialogueManager(model_path, tokenizer_path, states, rl_states)
         self.q_table = Qtable(q_table_path)
 
-    def respond(self, input_variables):
+    def respond(self, input_variables, context):
+        input_variables.update({"context": context})
         return self.conversational_model.generate_response(input_variables)
 
     def retrieve_docs(self, retrieval_input_variables):

@@ -23,7 +23,7 @@ class QuizMaster(IntelligentNPC):
         self.input_variables = {}
 
         self.current_question = ''
-        self.question_template = ("randomly set the options\n" +
+        self.question_template = ("change the order of correct an incorrect options.\n" +
                                   "Category:\n" +
                                   "Difficulty:\n" +
                                   "Type:\n" +
@@ -34,7 +34,7 @@ class QuizMaster(IntelligentNPC):
                                   "Option D:\n\n" +
                                   "What's your answer {player}?")
 
-    def respond(self, user_input):
+    def respond(self, user_input, context=""):
         self.input_variables.update({'user_input': user_input})
         user_intent = self.getIntent(user_input)
         print(user_intent)
@@ -60,28 +60,38 @@ class QuizMaster(IntelligentNPC):
         elif user_intent == "affirm_hint":
             response = self.provideHint()
 
-        else:
-            # user_intent == "decline"
+        elif user_intent == "decline_hint":
+            response = self.declineHint()
+
+        elif user_intent == "decline_ready":
+            response = self.notReady()
+
+        elif user_intent == "decline":
             if self.getStates()['need_hint']:
-                print('player does not want any help')
-                self.updateStates({'need_hint': False})
-                context = "the player deos not want any help. Continue with the quiz. do not skip the question."
-                self.input_variables.update({"context": context})
-                response = super().respond(self.input_variables)
+                response = self.declineHint()
             else:
-                print('player not ready')
-                context = "the player is not ready for the question."
-                self.input_variables.update({"context": context})
-                response = super().respond(self.input_variables)
-            pass
+                response = self.notReady()
+        else:
+            # user intent is out of scope
+            response = self.outOfScope()
+
         return response
+
+    def outOfScope(self):
+        print('player intent is out of scope')
+        context = "The player intention is out of scope. however you respond to the player query."
+        return super().respond(self.input_variables, context)
+
+    def notReady(self):
+        print('player not ready')
+        context = "the player is not ready for the question."
+        return super().respond(self.input_variables, context)
 
     def greetings(self):
         print('action: greetings')
         context = ("Say hello to {player}, and introduce yourself. provide an intro to the quiz game and ask if the "
                    "player is ready to start the quiz.")
-        self.input_variables.update({'context': context})
-        return super().respond(self.input_variables)
+        return super().respond(self.input_variables, context)
 
     def selectQuestion(self):
         difficulty = self.getRLStates()['difficulty']
@@ -95,13 +105,30 @@ class QuizMaster(IntelligentNPC):
         print('action: askQuestion')
         question = self.selectQuestion()
         context = (f"given this template:\n{self.question_template}\n" +
-                   f"ask the question below:\n{question}")
-        self.input_variables.update({'context': context})
-        return super().respond(self.input_variables)
+                   f"ask the question below, the order of correct"
+                   f" and incorrect answers should be mixed up:\n{question}")
+        return super().respond(self.input_variables, context)
 
     def endGame(self):
-        response = ''
-        return response
+        score = self.getStates()['score']
+        correct_answers = self.getRLStates()['correct_answers']
+        incorrect_answers = self.getRLStates()['incorrect_answers']
+        context = (f"the game is over. show the player the results below:\n"
+                   f"score: {score}\ncorrects answers: {correct_answers}\n"
+                   f"incorrect answers: {incorrect_answers}\n"
+                   f"and ask if the player would like to start another round with a new question")
+
+        self.updateStates({"need_hint": False,
+                           "remaining_hints": 2,
+                           "score": 0
+                           })
+
+        self.updateRLStates({"difficulty": "easy",
+                             "correct_answers": 0,
+                             "incorrect_answers": 0,
+                             })
+
+        return super().respond(self.input_variables, context)
 
     def takeAction(self):
         action = self.getAction(self.getRLStates())
@@ -121,18 +148,28 @@ class QuizMaster(IntelligentNPC):
 
     def provideFeedback(self):
         print('action: provideFeedback')
-        context = (f"The player has given the answer for this question:\n{self.current_question}\n" 
+        context = (f"The player has given the answer for this question:\n{self.current_question}\n"
                    "check the answer and provide feedback. always put 'Correct!' or 'Incorrect!' at the start of your "
                    "feedback, then ask if the player is ready for the next question")
-        self.input_variables.update({'context': context})
-        response = super().respond(self.input_variables)
+        response = super().respond(self.input_variables, context)
         self.updateCorrectIncorrect(response)
         return response
+
+    def updateScore(self):
+        score = self.getStates()['score']
+        difficulty = self.getRLStates()['difficulty']
+        if difficulty == 'easy':
+            self.updateStates({"score": score + 2})
+        elif difficulty == 'medium':
+            self.updateStates({"score": score + 4})
+        else:
+            self.updateStates({"score": score + 6})
 
     def updateCorrectIncorrect(self, response):
         if response[0:7] == "Correct":
             correct_answers = self.getRLStates()['correct_answers']
             self.updateRLStates({'correct_answers': correct_answers + 1})
+            self.updateScore()
         else:
             incorrect_answers = self.getRLStates()['incorrect_answers']
             self.updateRLStates({'incorrect_answers': incorrect_answers + 1})
@@ -146,35 +183,36 @@ class QuizMaster(IntelligentNPC):
             context = ("The player is not sure what the correct answer is for this question:\n"
                        f"{self.current_question}\ninform that the player has {remaining_hints} remaining "
                        "hints for the whole game and ask if the player wants to use the hint option")
-            self.input_variables.update({'context': context})
         else:
             context = ("The player is not sure what the correct answer is."
                        "inform the player ran out of the number of hints,"
                        " and the player should take a guess.")
-            self.input_variables.update({'context': context})
-        return super().respond(self.input_variables)
+        return super().respond(self.input_variables, context)
 
     def provideHint(self):
         print('action: provideHint')
         remaining_hints = self.getStates()['remaining_hints']
         self.updateStates({"need_hint": False})
         if remaining_hints > 0:
-            self.updateStates({"remaining_hints": remaining_hints-1})
+            self.updateStates({"remaining_hints": remaining_hints - 1})
             context = ("The player is not sure what the correct answer is for this question:\n. "
                        f"{self.current_question}\nprovide a hint for the player")
-            self.input_variables.update({'context': context})
         else:
             context = ("The player is not sure what the correct answer is."
                        "inform the player ran out of the number of hints, "
                        "and the player should take a guess.")
-            self.input_variables.update({'context': context})
-        return super().respond(self.input_variables)
+        return super().respond(self.input_variables, context)
+
+    def declineHint(self):
+        print('player does not want any help')
+        self.updateStates({'need_hint': False})
+        context = "the player deos not want any help. Continue with the quiz. do not skip the question."
+        return super().respond(self.input_variables, context)
 
 
 class Player:
     def __init__(self, name):
         self.name = name
-        self.score = 0
 
 
 class QuizGame:

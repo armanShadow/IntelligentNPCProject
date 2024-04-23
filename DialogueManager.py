@@ -47,5 +47,6 @@ class DialogueManager:
         tokens = pad_sequences(tokens, maxlen=6000)
         prediction = self.intentClassifier.predict(np.array(tokens))
         pred = np.argmax(prediction)
-        classes = ['affirm_ready', 'affirm_hint', 'giving_answer', 'need_hint', 'affirm', 'decline', 'greetings']
+        classes = ['oos', 'affirm_ready', 'affirm_hint', 'giving_answer', 'need_hint', 'affirm',
+                   "decline_ready", "decline_hint", 'decline', 'greetings']
         return classes[pred]
