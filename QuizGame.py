@@ -79,7 +79,8 @@ class QuizMaster(IntelligentNPC):
 
     def outOfScope(self):
         print('player intent is out of scope')
-        context = "The player intention is out of scope. however you respond to the player query."
+        context = ("The player intention is out of scope. however you can respond to the player query. you can talk "
+                   "about different topics")
         return super().respond(self.input_variables, context)
 
     def notReady(self):

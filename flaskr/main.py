@@ -65,12 +65,12 @@ def chat():
 
     bot_response = quiz_game.quiz_master.respond(user_input)
 
-    #path = stt.translate_text_to_speech(bot_response)
-    #file_name = os.path.basename(path).split('/')[-1]
+    path = stt.translate_text_to_speech(bot_response)
+    file_name = os.path.basename(path).split('/')[-1]
 
     question, filtered_response = quiz_game.extractQuestion(bot_response)
 
-    return {'Response': filtered_response, "Question": question, "TranslatedSpeechFile": 'output.wav'}
+    return {'Response': filtered_response, "Question": question, "TranslatedSpeechFile": file_name}
 
 
 @app.route('/chatHistory', methods=['GET'])
